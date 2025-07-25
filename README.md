@@ -70,6 +70,42 @@ The script uses several MySQL optimizations for faster imports:
 - Maintains list of successfully processed files
 - Stores last successful import date
 
+## Setup Instructions
+
+### 1. Database Setup
+Before running the crawler, you must create the required MySQL/MariaDB tables using the provided SQL script:
+
+```bash
+mysql -u your_username -p your_database < IMDb-tables.sql
+```
+
+This script creates all the necessary import tables:
+- `T_WC_IMDB_MOVIE_RATING_IMPORT`
+- `T_WC_IMDB_MOVIE_BASIC_IMPORT`
+- `T_WC_IMDB_MOVIE_AKA_IMPORT`
+- `T_WC_IMDB_MOVIE_PRINCIPAL_IMPORT`
+- `T_WC_IMDB_PERSON_BASIC_IMPORT`
+- `T_WC_IMDB_SERIE_EPISODE_IMPORT`
+- `T_WC_IMDB_PERSON_MOVIE_IMPORT`
+
+### 2. Configuration File Setup
+Copy the example configuration file and update it with your actual credentials:
+
+```bash
+cp citizenphilsecrets.example.py citizenphilsecrets.py
+```
+
+Then edit `citizenphilsecrets.py` and replace the placeholder values with your actual:
+- **MariaDB/MySQL credentials**: host, port, username, password, database name
+- **TMDb API credentials**: API key and token (get these from https://www.themoviedb.org/settings/api)
+- **Timezone**: Update if different from Europe/Paris
+
+### 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Dependencies
 
 ```python
@@ -87,10 +123,11 @@ import os
 
 ## Configuration Requirements
 
-- **Database**: MySQL database with pre-created import tables
+- **Database**: MySQL/MariaDB database with pre-created import tables (use `IMDb-tables.sql`)
 - **File System**: Write access to `/shared/` directory for temporary files
 - **Network**: Internet access to download from `datasets.imdbws.com`
 - **Custom Module**: `citizenphil` module for database connections and server variables
+- **API Access**: TMDb API key and token for additional movie data
 
 ## Error Handling
 
