@@ -20,23 +20,32 @@ strdattodayminus1us = datjminus1.strftime("%m_%d_%Y")
 strimdbdatprev = cp.f_getservervariable("strimdbcrawlerimportdate",0)
 print(f"strimdbdatprev={strimdbdatprev}")
 
-strprocessesexecutedprevious = cp.f_getservervariable("strimdbcrawlerprocessesexecuted",0)
-strprocessesexecuteddesc = "List of processes executed for the download of the IMDb ID import files"
-cp.f_setservervariable("strimdbcrawlerprocessesexecutedprevious",strprocessesexecutedprevious,strprocessesexecuteddesc + " (previous execution)",0)
-strprocessesexecuted = ""
-cp.f_setservervariable("strimdbcrawlerprocessesexecuted",strprocessesexecuted,strprocessesexecuteddesc,0)
-
 try:
-    with cp.connectioncp:
-        with cp.connectioncp.cursor() as cursor:
-            cursor3 = cp.connectioncp.cursor()
-            strnow = datetime.now(cp.paris_tz).strftime("%Y-%m-%d %H:%M:%S")
-            cp.f_setservervariable("strimdbcrawlerstartdatetime",strnow,"Date and time of the last start of the IMDb crawler",0)
+    conn = cp.f_getconnection()
+    with conn:
+        with conn.cursor() as cursor:
+            cursor3 = conn.cursor()
             intdownloadok = True
             if strdattodayminus1 > strimdbdatprev:
+                # Start timing the script execution
+                start_time = time.time()
+                strnow = datetime.now(cp.paris_tz).strftime("%Y-%m-%d %H:%M:%S")
+                cp.f_setservervariable("strimdbcrawlerstartdatetime",strnow,"Date and time of the last start of the IMDb crawler",0)
+                strprocessesexecutedprevious = cp.f_getservervariable("strimdbcrawlerprocessesexecuted",0)
+                strprocessesexecuteddesc = "List of processes executed for the download of the IMDb ID import files"
+                cp.f_setservervariable("strimdbcrawlerprocessesexecutedprevious",strprocessesexecutedprevious,strprocessesexecuteddesc + " (previous execution)",0)
+                strprocessesexecuted = ""
+                cp.f_setservervariable("strimdbcrawlerprocessesexecuted",strprocessesexecuted,strprocessesexecuteddesc,0)
+
+                strtotalruntimedesc = "Total runtime of the IMDb crawler"
+                strtotalruntimeprevious = cp.f_getservervariable("strimdbcrawlertotalruntime",0)
+                cp.f_setservervariable("strimdbcrawlertotalruntimeprevious",strtotalruntimeprevious,strtotalruntimedesc + " (previous execution)",0)
+                strtotalruntime = "RUNNING"
+                cp.f_setservervariable("strimdbcrawlertotalruntime",strtotalruntime,strtotalruntimedesc,0)
                 # Now let's import the IMDb data files
                 print("This is a newer date, so we must download the IMDb data files and import them into the MySQL database")
                 arrimdbfile = {1: 'title.ratings', 2: 'title.basics', 3: 'title.akas', 4: 'title.principals', 5: 'name.basics', 6: 'title.episode', 7: 'title.crew'}
+                arrimdbfile = {1: 'title.ratings'}
                 #arrimdbfile = {2: 'title.basics'}
                 #arrimdbfile = {3: 'title.akas'}
                 #arrimdbfile = {4: 'title.principals'}
@@ -138,15 +147,26 @@ SET autocommit = 1; """
                             # Failed to download one file
                             print("Failed to download the file.")
                             intdownloadok = False
-            if intdownloadok:
-                # All files were downloaded so we save the date and time of the last completed download of IMDb data files
-                cp.f_setservervariable("strimdbcrawlerimportdate",strdattodayminus1,"Date of the last download of the IMDb ID import files",0)
-            
-            strcurrentprocess = ""
-            cp.f_setservervariable("strimdbcrawlercurrentprocess",strcurrentprocess,"Current process in the IMDb crawler",0)
-            strnow = datetime.now(cp.paris_tz).strftime("%Y-%m-%d %H:%M:%S")
-            cp.f_setservervariable("strimdbcrawlerenddatetime",strnow,"Date and time of the IMDb crawler ending",0)
+                strcurrentprocess = ""
+                cp.f_setservervariable("strimdbcrawlercurrentprocess",strcurrentprocess,"Current process in the IMDb crawler",0)
+                strnow = datetime.now(cp.paris_tz).strftime("%Y-%m-%d %H:%M:%S")
+                cp.f_setservervariable("strimdbcrawlerenddatetime",strnow,"Date and time of the IMDb crawler ending",0)
+                # Calculate total runtime and convert to readable format
+                end_time = time.time()
+                strtotalruntime = int(end_time - start_time)  # Total runtime in seconds
+                cp.f_setservervariable("strtmdbcrawlertotalruntimeseconds",str(strtotalruntime),strtotalruntimedesc,0)
+                readable_duration = cp.convert_seconds_to_duration(strtotalruntime)
+                cp.f_setservervariable("strimdbcrawlertotalruntime",strtotalruntime,strtotalruntimedesc,0)
+                print(f"Total runtime: {strtotalruntime} seconds ({readable_duration})")
+                if intdownloadok:
+                    # All files were downloaded so we save the date and time of the last completed download of IMDb data files
+                    cp.f_setservervariable("strimdbcrawlerimportdate",strdattodayminus1,"Date of the last download of the IMDb ID import files",0)
+    
     print("Process completed")
+    
 except pymysql.MySQLError as e:
     print(f"❌ MySQL Error: {e}")
-    cp.connectioncp.rollback()
+    conn = getattr(cp, "connectioncp", None)
+    if conn is not None and getattr(conn, "open", False):
+        conn.rollback()
+    
