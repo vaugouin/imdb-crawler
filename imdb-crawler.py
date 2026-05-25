@@ -11,7 +11,7 @@ import os
 
 datnow = datetime.now(cp.paris_tz)
 # Compute the date and time for J-1 (yesterday)
-# So we are sure to find the TMDb Id export files
+# So we are sure to find the IMDb Id export files
 delta = timedelta(days=1)
 datjminus1 = datnow - delta
 #strdatjminus1 = datjminus1.strftime("%Y-%m-%d %H:%M:%S")
@@ -154,7 +154,7 @@ SET autocommit = 1; """
                 # Calculate total runtime and convert to readable format
                 end_time = time.time()
                 strtotalruntime = int(end_time - start_time)  # Total runtime in seconds
-                cp.f_setservervariable("strtmdbcrawlertotalruntimeseconds",str(strtotalruntime),strtotalruntimedesc,0)
+                cp.f_setservervariable("strimdbcrawlertotalruntimeseconds",str(strtotalruntime),strtotalruntimedesc,0)
                 readable_duration = cp.convert_seconds_to_duration(strtotalruntime)
                 cp.f_setservervariable("strimdbcrawlertotalruntime",strtotalruntime,strtotalruntimedesc,0)
                 print(f"Total runtime: {strtotalruntime} seconds ({readable_duration})")

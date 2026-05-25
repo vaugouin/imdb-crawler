@@ -9,7 +9,7 @@ else
     mkdir -p $HOME/docker/shared_data
     cd $HOME/docker/imdb-crawler
     docker build -t imdb-crawler-python-app .
-    # docker run -it --rm --network="host" --name imdb-crawler -v $HOME/docker/shared_data:/shared imdb-crawler-python-app
-    docker run -d --rm --network="host" --name imdb-crawler -v $HOME/docker/shared_data:/shared imdb-crawler-python-app
+    # docker run -it --rm --network="host" --name imdb-crawler --env-file /home/debian/docker/imdb-crawler/.env -v $HOME/docker/shared_data:/shared imdb-crawler-python-app
+    docker run -d --rm --network="host" --name imdb-crawler --env-file /home/debian/docker/imdb-crawler/.env -v $HOME/docker/shared_data:/shared imdb-crawler-python-app
     echo "imdb-crawler Docker container started."
 fi
