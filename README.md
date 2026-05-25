@@ -89,22 +89,50 @@ This script creates all the necessary import tables:
 - `T_WC_IMDB_PERSON_MOVIE_IMPORT`
 
 ### 2. Configuration File Setup
-Copy the example configuration file and update it with your actual credentials:
+Copy the example environment file and update it with your actual credentials:
 
 ```bash
-cp citizenphilsecrets.example.py citizenphilsecrets.py
+cp .env.example .env
 ```
 
-Then edit `citizenphilsecrets.py` and replace the placeholder values with your actual:
+Then edit `.env` and replace the placeholder values with your actual:
 - **MariaDB/MySQL credentials**: host, port, username, password, database name
-- **TMDb API credentials**: API key and token (get these from https://www.themoviedb.org/settings/api)
 - **Timezone**: Update if different from Europe/Paris
+
+> **Security note:** `.env` is listed in both `.gitignore` and `.dockerignore`, so it is excluded from the git repository and from the Docker build context. Never commit `.env` and never `COPY` it into the image — see the [Docker usage](#docker-usage) section below for how secrets are injected at runtime.
 
 ### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
+
+## Docker Usage
+
+The image must be built **without** secrets baked in. The `Dockerfile` only ships the application code and non-sensitive defaults; the `.env` file is excluded from the build context by `.dockerignore`. At runtime, secrets are supplied with Docker's `--env-file` option, pointing at a host-managed env file that lives **outside** the application source tree.
+
+### Build
+
+```bash
+docker build -t imdb-crawler-python-app .
+```
+
+### Run
+
+```bash
+docker run -d --rm \
+    --network="host" \
+    --name imdb-crawler \
+    --env-file /home/debian/docker/imdb-crawler/.env \
+    -v $HOME/docker/shared_data:/shared \
+    imdb-crawler-python-app
+```
+
+Key points:
+- `--env-file /home/debian/docker/imdb-crawler/.env` injects the database credentials and other environment variables at container start time. Adjust the path to wherever the env file lives on your host.
+- The env file is **not** copied into the image, is not part of any image layer or build cache, and is not pushed to any registry.
+- The Dockerfile does not `COPY .env` and does not declare secrets in `ENV` lines. Only non-sensitive defaults belong in the image.
+- The provided helper script [`imdb-crawler.sh`](imdb-crawler.sh) already uses `--env-file` and can be used to build and start the container in one step.
 
 ## Dependencies
 
