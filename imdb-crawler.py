@@ -52,6 +52,9 @@ try:
                 #arrimdbfile = {5: 'name.basics'}
                 #arrimdbfile = {6: 'title.episode'}
                 #arrimdbfile = {7: 'title.crew'}
+                #if strnow.startswith("2026-05-27"):
+                #    #arrimdbfile = {1: 'title.ratings', 6: 'title.episode'}
+                #    arrimdbfile = {1: 'title.ratings', 2: 'title.basics', 3: 'title.akas', 4: 'title.principals', 5: 'name.basics', 6: 'title.episode', 7: 'title.crew'}
                 for intimdbfile,strimdbfilename in arrimdbfile.items():
                     strcurrentprocess = f"{intimdbfile}: processing " + strimdbfilename + " data from IMDb"
                     cp.f_setservervariable("strimdbcrawlercurrentprocess",strcurrentprocess,"Current process in the IMDb crawler",0)
@@ -117,7 +120,7 @@ SET unique_checks = 0;
 SET foreign_key_checks = 0; 
 ALTER TABLE {strsqltablename} DISABLE KEYS; 
 TRUNCATE TABLE {strsqltablename}; """
-                            strsqlload = f"""LOAD DATA INFILE '{strlocaltsvfilename}' 
+                            strsqlload = f"""LOAD DATA LOCAL INFILE '{strlocaltsvfilename}'
 INTO TABLE {strsqltablename} 
 FIELDS TERMINATED BY '\t' 
 ENCLOSED BY '' 
@@ -141,11 +144,17 @@ SET autocommit = 1; """
                             # Final commit if needed (though COMMIT is in strsqlafter)
                             #connection.commit()
                             print(f"Import {strlocaltsvfilename} to {strsqltablename} done!")
+                            # Record the number of rows imported into the table
+                            cursor.execute(f"SELECT COUNT(*) AS cnt FROM {strsqltablename}")
+                            intimportcount = cursor.fetchone()["cnt"]
+                            cp.f_setservervariable(strimdbchangescountvarname,str(intimportcount),"Number of rows imported for the IMDb "+strimdbfilename,0)
+                            print(f"Imported {intimportcount} rows into {strsqltablename}")
                             print(f"Remove {strlocaltsvfilename}")
                             os.remove(strlocaltsvfilename)
                         else:
                             # Failed to download one file
                             print("Failed to download the file.")
+                            cp.f_setservervariable(strimdbchangescountvarname,"FAILED","Number of rows imported for the IMDb "+strimdbfilename,0)
                             intdownloadok = False
                 strcurrentprocess = ""
                 cp.f_setservervariable("strimdbcrawlercurrentprocess",strcurrentprocess,"Current process in the IMDb crawler",0)
@@ -156,11 +165,12 @@ SET autocommit = 1; """
                 strtotalruntime = int(end_time - start_time)  # Total runtime in seconds
                 cp.f_setservervariable("strimdbcrawlertotalruntimeseconds",str(strtotalruntime),strtotalruntimedesc,0)
                 readable_duration = cp.convert_seconds_to_duration(strtotalruntime)
-                cp.f_setservervariable("strimdbcrawlertotalruntime",strtotalruntime,strtotalruntimedesc,0)
+                cp.f_setservervariable("strimdbcrawlertotalruntime",readable_duration,strtotalruntimedesc,0)
                 print(f"Total runtime: {strtotalruntime} seconds ({readable_duration})")
                 if intdownloadok:
                     # All files were downloaded so we save the date and time of the last completed download of IMDb data files
                     cp.f_setservervariable("strimdbcrawlerimportdate",strdattodayminus1,"Date of the last download of the IMDb ID import files",0)
+                    print("IMDb data files downloaded and imported successfully",strdattodayminus1)
     
     print("Process completed")
     
