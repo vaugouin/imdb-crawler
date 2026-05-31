@@ -6,10 +6,10 @@ if [ $(docker ps -q -f name=imdb-crawler) ]; then
 else
     # Start the imdb-crawler container if it is not running
     # Create shared_data folder if it doesn't exist
-    mkdir -p $HOME/docker/shared_data
+    mkdir -p $HOME/docker/shared_data/imdb-crawler
     cd $HOME/docker/imdb-crawler
     docker build -t imdb-crawler-python-app .
-    # docker run -it --rm --network="host" --name imdb-crawler --env-file /home/debian/docker/imdb-crawler/.env -v $HOME/docker/shared_data:/shared imdb-crawler-python-app
-    docker run -d --rm --network="host" --name imdb-crawler --env-file /home/debian/docker/imdb-crawler/.env -v $HOME/docker/shared_data:/shared imdb-crawler-python-app
+    # docker run -it --rm --network="host" --name imdb-crawler --env-file /home/debian/docker/imdb-crawler/.env -v $HOME/docker/shared_data/imdb-crawler:/shared imdb-crawler-python-app
+    docker run -d --rm --network="host" --name imdb-crawler --env-file /home/debian/docker/imdb-crawler/.env -v $HOME/docker/shared_data/imdb-crawler:/shared imdb-crawler-python-app
     echo "imdb-crawler Docker container started."
 fi
