@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Switched off by off.sh, back on with on.sh: the flag file CRON_OFF next to this script makes
+# every cron tick exit here. The script keeps its name, so the git clone stays clean.
+if [ -f "$(dirname "$(readlink -f "$0")")/CRON_OFF" ]; then
+    echo "CRON_OFF present: imdb-crawler switched off (bash on.sh to switch it back on)."
+    exit 0
+fi
+
 # Check if the imdb-crawler Docker container is running
 if [ $(docker ps -q -f name=imdb-crawler) ]; then
     echo "imdb-crawler Docker container is already running."
