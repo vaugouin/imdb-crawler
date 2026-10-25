@@ -93,7 +93,7 @@ The crawler is built and run as a Docker container via the repo's `Dockerfile` (
 ---
 
 **Last Updated**: 2026-10-25
-**Current Version**: 1.0.2 
+**Current Version**: 1.0.3 
 
 ## Backlog (Nestor second-brain)
 
