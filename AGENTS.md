@@ -22,7 +22,7 @@ One stage of **Agent BBB** (owner `vaugouin`, siblings under `%USERPROFILE%/Code
 ---
 
 **Last Updated**: 2026-10-31
-**Current Version**: 1.0.4 
+**Current Version**: 1.0.5 
 
 ## Backlog (Nestor second-brain)
 
