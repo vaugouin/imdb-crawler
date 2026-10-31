@@ -18,7 +18,7 @@ The `imdb-crawler.py` script is designed to:
 - Maintains execution logs and status tracking
 
 ### Data Sources
-The script downloads and processes 7 different IMDb dataset files:
+The script knows 7 IMDb dataset files. The run currently imports only `title.ratings`: in `imdb-crawler.py` the full list is overridden by `arrimdbfile = {1: 'title.ratings'}`, and the other files are re-enabled by editing that line.
 
 1. **title.ratings** - Movie/TV show ratings data
 2. **title.basics** - Basic title information (title, year, genre, etc.)
@@ -60,26 +60,21 @@ For each IMDb dataset file:
 ### 4. Database Import Optimization
 The script uses several MySQL optimizations for faster imports:
 - Disables autocommit, unique checks, and foreign key checks
-- Disables table keys during import
-- Uses `LOAD DATA INFILE` for bulk insertion
+- Disables table keys during import and truncates the table before loading
+- Uses `LOAD DATA LOCAL INFILE` for bulk insertion
 - Re-enables all checks and commits after import
 
 ### 5. Status Tracking
 - Records start/end timestamps
 - Tracks current processing step
 - Maintains list of successfully processed files
+- Records the number of rows imported per file (`strimdbcrawler<file>importcount`, `FAILED` on a failed download)
 - Stores last successful import date
 
 ## Setup Instructions
 
-### 1. Database Setup
-Before running the crawler, you must create the required MySQL/MariaDB tables using the provided SQL script:
-
-```bash
-mysql -u your_username -p your_database < IMDb-tables.sql
-```
-
-This script creates all the necessary import tables:
+### 1. Database tables
+The crawler writes to these import tables, defined in [`doc/sql/IMDb-tables.sql`](doc/sql/IMDb-tables.sql):
 - `T_WC_IMDB_MOVIE_RATING_IMPORT`
 - `T_WC_IMDB_MOVIE_BASIC_IMPORT`
 - `T_WC_IMDB_MOVIE_AKA_IMPORT`
@@ -124,7 +119,7 @@ docker run -d --rm \
     --network="host" \
     --name imdb-crawler \
     --env-file /home/debian/docker/imdb-crawler/.env \
-    -v $HOME/docker/shared_data:/shared \
+    -v $HOME/docker/shared_data/imdb-crawler:/shared \
     imdb-crawler-python-app
 ```
 
@@ -151,11 +146,10 @@ import os
 
 ## Configuration Requirements
 
-- **Database**: MySQL/MariaDB database with pre-created import tables (use `IMDb-tables.sql`)
+- **Database**: MySQL/MariaDB database with the import tables (see `doc/sql/IMDb-tables.sql`)
 - **File System**: Write access to `/shared/` directory for temporary files
 - **Network**: Internet access to download from `datasets.imdbws.com`
 - **Custom Module**: `citizenphil` module for database connections and server variables
-- **API Access**: TMDb API key and token for additional movie data
 
 ## Error Handling
 
@@ -186,6 +180,8 @@ The script is designed to run automatically (e.g., via cron job) and will:
 2. Download and process only if needed
 3. Update tracking variables upon completion
 4. Log all activities for monitoring
+
+The cron entry calls [`imdb-crawler.sh`](imdb-crawler.sh). `off.sh` writes the flag file `CRON_OFF`, which makes the wrapper exit at once, and `on.sh` deletes it.
 
 ## Data Freshness
 
