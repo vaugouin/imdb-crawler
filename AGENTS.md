@@ -1,5 +1,9 @@
 # AGENTS.md - Agent Guide for IMDb Crawler
 
+## Canary
+
+Start every reply with "Philippe,": no exceptions, including short replies and tool summaries.
+
 Single canonical guide for autonomous coding agents in this repository; @CLAUDE.md and any future tool-specific guide only point here. Overview, datasets, workflow, setup, Docker and secrets: @README.md (canonical, not duplicated here). Reference DDL: [doc/sql/IMDb-tables.sql](doc/sql/IMDb-tables.sql), read-only unless the user asks for schema-doc edits. Keep `README.md` aligned with every user-facing change; update this file only when agent workflow or safety context changes.
 
 ---
@@ -22,7 +26,7 @@ One stage of **Agent BBB** (owner `vaugouin`, siblings under `%USERPROFILE%/Code
 ---
 
 **Last Updated**: 2026-10-31
-**Current Version**: 1.0.5 
+**Current Version**: 1.0.6 
 
 ## Backlog (Nestor second-brain)
 
