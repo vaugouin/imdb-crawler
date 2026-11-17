@@ -10,7 +10,7 @@ Single canonical guide for autonomous coding agents in this repository; @CLAUDE.
 
 ## Related repositories (project ecosystem)
 
-One stage of **Agent BBB** (owner `vaugouin`, siblings under `%USERPROFILE%/Code/<repo>`), converging on a shared MariaDB (`T_WC_*`) and ChromaDB. Canonical roster: `%USERPROFILE%/Nestor/projets/t2s-backlog/topics/related-repositories.txt`.
+One stage of **Cinephile App** (owner `vaugouin`, siblings under `%USERPROFILE%/Code/<repo>`), converging on a shared MariaDB (`T_WC_*`) and ChromaDB. Canonical roster: `%USERPROFILE%/Nestor/projets/t2s-backlog/topics/related-repositories.txt`.
 
 **This repository's role:** Acquisition. Bulk-imports the official IMDb TSV datasets into the `T_WC_IMDB_*` staging tables. Ratings and links are consumed by `tmdb-movie-preprocess` when it builds the `T_WC_T2S_*` read-model.
 
